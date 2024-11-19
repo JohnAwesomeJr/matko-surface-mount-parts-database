@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Sheets API Client-Side</title>
+    <style>
+        /* Basic styling for the table */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 8px 12px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f4f4f4;
+        }
+
+        input[type="text"] {
+            padding: 8px;
+            margin-bottom: 20px;
+            width: 300px;
+            border: 1px solid #ddd;
+            font-size: 16px;
+        }
+
+        .search-box {
+            margin-right: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Google Sheets Data</h1>
+
+    <!-- Search filter inputs -->
+    <div>
+        <input type="text" id="partIdSearch" class="search-box" placeholder="Search by Part ID" oninput="filterData()">
+        <input type="text" id="dataSearch" class="search-box" placeholder="Search by Data" oninput="filterData()">
+        <input type="text" id="notesSearch" class="search-box" placeholder="Search by Notes" oninput="filterData()">
+    </div>
+
+    <!-- Button to fetch the data -->
+    <button onclick="getData()">Get Google Sheet Data</button>
+
+    <!-- Table to display the data -->
+    <table id="dataTable" style="display:none;">
+        <thead>
+            <tr>
+                <th>Part ID</th>
+                <th>Data</th>
+                <th>Notes</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            <!-- Data will be populated here -->
+        </tbody>
+    </table>
+
+    <script>
+        // Replace with your actual API key
+        const API_KEY = 'AIzaSyBHTLgwIAoKqEmtDqWAJ-GjRuixhxk08GI';  // You can get this from the Google Cloud Console
+        const SPREADSHEET_ID = '1KaM2flJrgnx5uJFyEmwAguhYs4wSelxWfXvfoUfOojM';  // Your Spreadsheet ID
+        const RANGE = 'Form Responses 1';  // Adjust the range as per your sheet
+
+        let allData = [];
+
+        function getData() {
+            const url = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${RANGE}?key=${API_KEY}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    allData = data.values.slice(1); // Skipping the header row
+                    // Fill missing columns with empty strings
+                    allData = allData.map(row => {
+                        // Ensure that each row has all 4 columns
+                        while (row.length < 4) {
+                            row.push("");  // Add empty string for missing columns
+                        }
+                        return row;
+                    });
+                    displayData(allData);
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
+        }
+
+        function displayData(data) {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = ''; // Clear any existing data
+
+            data.forEach(row => {
+                const tr = document.createElement('tr');
+
+                // Only display Part ID, Data, and Notes (skipping the Timestamp column)
+                const partIdTd = document.createElement('td');
+                partIdTd.textContent = row[1] || '';  // Part ID
+                tr.appendChild(partIdTd);
+
+                const dataTd = document.createElement('td');
+                dataTd.textContent = row[2] || '';  // Data
+                tr.appendChild(dataTd);
+
+                const notesTd = document.createElement('td');
+                notesTd.textContent = row[3] || '';  // Notes
+                tr.appendChild(notesTd);
+
+                tableBody.appendChild(tr);
+            });
+
+            // Show the table
+            document.getElementById('dataTable').style.display = 'table';
+        }
+
+        function filterData() {
+            const partIdSearchTerm = document.getElementById('partIdSearch').value.toLowerCase();
+            const dataSearchTerm = document.getElementById('dataSearch').value.toLowerCase();
+            const notesSearchTerm = document.getElementById('notesSearch').value.toLowerCase();
+
+            // Filter data based on the individual search terms
+            const filteredData = allData.filter(row => {
+                const partIdMatches = !partIdSearchTerm || row[1].toLowerCase().includes(partIdSearchTerm);
+                const dataMatches = !dataSearchTerm || row[2].toLowerCase().includes(dataSearchTerm);
+                const notesMatches = !notesSearchTerm || row[3].toLowerCase().includes(notesSearchTerm);
+
+                // Return row if it matches any of the search filters
+                return partIdMatches && dataMatches && notesMatches;
+            });
+
+            // Display the filtered data
+            displayData(filteredData);
+        }
+    </script>
+
+</body>
+
+</html>
