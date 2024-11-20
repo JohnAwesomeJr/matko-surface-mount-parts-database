@@ -123,24 +123,24 @@
             document.getElementById('dataTable').style.display = 'table';
         }
 
-        function filterData() {
-            const partIdSearchTerm = document.getElementById('partIdSearch').value.toLowerCase();
-            const dataSearchTerm = document.getElementById('dataSearch').value.toLowerCase();
-            const notesSearchTerm = document.getElementById('notesSearch').value.toLowerCase();
+function filterData() {
+    const partIdSearchTerm = document.getElementById('partIdSearch').value.trim(); // Trim any extra spaces
+    const dataSearchTerm = document.getElementById('dataSearch').value.toLowerCase();
+    const notesSearchTerm = document.getElementById('notesSearch').value.toLowerCase();
 
-            // Filter data based on the individual search terms
-            const filteredData = allData.filter(row => {
-                const partIdMatches = !partIdSearchTerm || row[1].toLowerCase().includes(partIdSearchTerm);
-                const dataMatches = !dataSearchTerm || row[2].toLowerCase().includes(dataSearchTerm);
-                const notesMatches = !notesSearchTerm || row[3].toLowerCase().includes(notesSearchTerm);
+    // Filter data based on the individual search terms
+    const filteredData = allData.filter(row => {
+        const partIdMatches = !partIdSearchTerm || row[1].trim() === partIdSearchTerm; // Exact match for Part ID
+        const dataMatches = !dataSearchTerm || row[2].toLowerCase().includes(dataSearchTerm);
+        const notesMatches = !notesSearchTerm || row[3].toLowerCase().includes(notesSearchTerm);
 
-                // Return row if it matches any of the search filters
-                return partIdMatches && dataMatches && notesMatches;
-            });
+        // Return row if it matches all of the search filters
+        return partIdMatches && dataMatches && notesMatches;
+    });
 
-            // Display the filtered data
-            displayData(filteredData);
-        }
+    // Display the filtered data
+    displayData(filteredData);
+}
     </script>
 
 </body>
